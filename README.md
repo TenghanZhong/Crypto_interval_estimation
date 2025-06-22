@@ -26,7 +26,6 @@ Input must be a CSV file containing the following columns:
 ## 🔍 Preprocessing
 
 - **Datetime parsing**: Convert `date` to datetime index and sort in ascending order.  
-- **Implied volatility normalization**: If `iv.max() > 2`, divide the entire column by 100.  
 - **Volume spike transformation**: Apply \( \ln(1 + x) \) to `vol_spike_10`.
 
 ---
