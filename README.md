@@ -120,20 +120,11 @@ The input must be a CSV file containing the following columns:
 
 ## 📏 Conformal Quantile Calibration (CQR)
 
-Using predictions \( \hat{q}_{0.05}, ..., \hat{q}_{0.95} \) on the validation set:
-
-Residuals:
-
-\[
-e_{lo} = \max(y - \hat{q}_{0.05}, 0), \quad
-e_{hi} = \max(\hat{q}_{0.95} - y, 0)
-\]
-
-At confidence level \( \alpha = 0.90 \), select the \( k \)-th smallest residuals:
-
-\[
-\delta_{lo},\ \delta_{hi}
-\]
+After training, the model outputs predicted quantiles on the validation set: `q_hat_0.05`, `q_hat_0.10`, ..., `q_hat_0.95`.
+To calibrate the prediction intervals using Conformal Quantile Regression (CQR), we first compute residuals for each validation sample: `e_lo = max(y - q_hat_0.05, 0)` and `e_hi = max(q_hat_0.95 - y, 0)`. 
+These residuals represent how much the true value exceeds the lower bound or falls short of the upper bound. 
+Given a desired confidence level `alpha = 0.90`, we then select the `k`-th smallest values from `e_lo` and `e_hi`, where `k = floor((1 - alpha) * (n + 1))`, and use them as calibration margins: `delta_lo` and `delta_hi`. 
+Finally, we adjust the predicted quantiles to form the calibrated interval: `q_cal_0.05 = q_hat_0.05 - delta_lo` and `q_cal_0.95 = q_hat_0.95 + delta_hi`, so that the resulting interval `[q_cal_0.05, q_cal_0.95]` achieves approximately 90% empirical coverage on unseen data.
 
 ---
 
@@ -141,10 +132,10 @@ At confidence level \( \alpha = 0.90 \), select the \( k \)-th smallest residual
 
 ### Calibrated Intervals
 
-\[
-\hat{q}_{0.05}' = \hat{q}_{0.05} - \delta_{lo}, \quad
-\hat{q}_{0.95}' = \hat{q}_{0.95} + \delta_{hi}
-\]
+To obtain the calibrated prediction interval, we adjust the original quantiles using the selected margins:  
+`q_cal_0.05 = q_hat_0.05 - delta_lo`  
+`q_cal_0.95 = q_hat_0.95 + delta_hi`  
+This yields the final calibrated interval `[q_cal_0.05, q_cal_0.95]` expected to cover the true value with the desired confidence level (e.g., 90%).
 
 ### Monte Carlo Simulation
 
