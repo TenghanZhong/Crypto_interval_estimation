@@ -9,17 +9,19 @@ This engine uses **LSTM-based quantile regression** combined with **Conformalize
 
 ## 📁 Input Data Format
 
-Input must be a CSV file containing the following columns:
+The input must be a CSV file containing the following columns:
 
-- `date`: Trading date  
-- `log_price`: Natural log of closing price  
-- `hv5`: 5-day historical volatility  
-- `iv`: Implied volatility (if `iv.max() > 2`, divide all values by 100)  
-- `oc_ret`: Open-to-close return  
-- `ema5_10`: Difference between 5-day and 10-day EMA  
-- `vol_spike_10`: 10-day volume spike indicator  
-- `fear_index`: Fear index  
-- `ret1_z`, `ret5_z`, `rsi14_z`: Precomputed z-score features  
+- **`date`**: Trading date in `YYYY-MM-DD` format  
+- **`log_price`**: Natural logarithm of the closing price  
+- **`hv5`**: 5-day historical volatility  
+- **`iv`**: Implied volatility (divide by 100 if values > 2)  
+- **`oc_ret`**: Open-to-close return  
+- **`ema5_10`**: Difference between 5-day and 10-day EMA  
+- **`vol_spike_10`**: 10-day volume spike indicator  
+- **`fear_index`**: Market fear index  
+- **`ret1_z`**: Z-score of 1-day return  
+- **`ret5_z`**: Z-score of 5-day return  
+- **`rsi14_z`**: Z-score of 14-day RSI
 
 ---
 
