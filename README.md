@@ -130,29 +130,37 @@ Finally, we adjust the predicted quantiles to form the calibrated interval: `q_c
 
 ## 🔮 Interval Inference & Evaluation
 
-### Calibrated Intervals
+### Conformal Calibration
 
-To obtain the calibrated prediction interval, we adjust the original quantiles using the selected margins:  
+To generate the final calibrated prediction interval, we apply the error margins obtained from the validation set to the model's original quantiles:  
 `q_cal_0.05 = q_hat_0.05 - delta_lo`  
 `q_cal_0.95 = q_hat_0.95 + delta_hi`  
-This yields the final calibrated interval `[q_cal_0.05, q_cal_0.95]` expected to cover the true value with the desired confidence level (e.g., 90%).
+This produces the calibrated interval `[q_cal_0.05, q_cal_0.95]`, which guarantees a marginal coverage rate no less than the target confidence level (e.g., 90%) under finite samples.
 
-### Monte Carlo Simulation
+### Inverse-Transform Sampling
 
-- Sample `n_sim = 100000` quantiles in [0.05, 0.95]  
-- Interpolate to log-return, shift to log-price, apply `exp` to get price  
-- Discretize into 7 intervals with \$2000 step size  
+We draw `n_sim` samples `u_i ~ Uniform(0, 1)` from a uniform distribution.  
+Given the calibrated quantile levels `{q_j}` and their corresponding log-price values `{l_j}`, each `u_i` is mapped via linear interpolation:  
+`l_tilde_i = Interp(u_i; (q_j, l_j))`  
+`P_tilde_i = exp(l_tilde_i)`  
+The resulting samples `{P_tilde_i}` follow the model's predicted conditional distribution over future prices.
 
-### Probability Assignment
+### Discrete Price Interval Construction
 
-- Count percentage of simulated prices falling in each interval  
-- Select top-2 most probable intervals: `best`, `second`
+Take the latest observed price `P_last` as the center, and define 7 consecutive price intervals using a fixed step size `Delta = $2000`:  
+`(-∞, P_last - 3Δ)`, `(P_last - 3Δ, P_last - 2Δ)`, ..., `(P_last + 2Δ, P_last + 3Δ)`, `(P_last + 3Δ, ∞)`
+
+### Probability Calculation and Interval Selection
+
+For each interval `k`, compute the proportion of simulated prices falling within that range:  
+`p_k = (1 / n_sim) * sum_{i=1}^{n_sim} 1(P_tilde_i in interval_k)`  
+Then, select the top-2 intervals with the highest probabilities and label them as `best` and `second`.
 
 ### Evaluation Metrics
 
-- `hit_best`: whether true price falls into the most probable interval  
-- `hit_second`: falls into the second most probable  
-- `prob_correct`: the predicted probability of the true price interval
+- `hit_best`: Whether the true future price `P_true` falls into the highest-probability interval  
+- `hit_second`: Whether `P_true` falls into the second-highest-probability interval  
+- `prob_correct`: The predicted probability of the interval containing `P_true`
 
 ---
 
